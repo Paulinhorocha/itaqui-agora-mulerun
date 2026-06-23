@@ -47,11 +47,8 @@ export default async function CityPage({ params }: CityPageProps) {
     categories?: { name: string; slug: string } | null;
   }> = [];
 
-  let hasSupabase = false;
-
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      hasSupabase = true;
       const supabase = await createClient();
 
       const { data: cityRow } = await supabase
@@ -75,23 +72,27 @@ export default async function CityPage({ params }: CityPageProps) {
     // fallback estático
   }
 
-  // Fallback estático se Supabase não configurado ou sem dados
-  if (!hasSupabase || newsList.length === 0) {
+  if (newsList.length === 0) {
     newsList = [
-      { id: "fb1", title: `${cityName}: novidades em breve`, excerpt: "Esta página será preenchida com notícias reais assim que o Supabase for configurado.", image_url: null, published_at: new Date().toISOString(), categories: { name: "Geral", slug: "geral" } },
+      {
+        id: "fb1",
+        title: `${cityName}: novidades em breve`,
+        excerpt: "Esta página será preenchida com notícias reais assim que o Supabase for configurado.",
+        image_url: null,
+        published_at: new Date().toISOString(),
+        categories: { name: "Geral", slug: "geral" },
+      },
     ];
   }
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-8 sm:py-10 lg:py-12">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-4 text-xs sm:text-sm">
         <Link href="/" className="text-ciano hover:underline">Início</Link>
         <span className="text-cinza-texto">/</span>
         <span className="text-texto font-semibold">{cityName}</span>
       </div>
 
-      {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-black text-azul mb-2">{cityName}</h1>
         <p className="text-sm sm:text-base text-cinza-texto">
@@ -99,7 +100,6 @@ export default async function CityPage({ params }: CityPageProps) {
         </p>
       </div>
 
-      {/* Grid de notícias */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
         {newsList.map((item) => {
           const cat = Array.isArray(item.categories) ? item.categories[0] : item.categories;
@@ -142,16 +142,6 @@ export default async function CityPage({ params }: CityPageProps) {
           );
         })}
       </div>
-
-      {newsList.length === 0 && (
-        <div className="text-center py-16">
-          <svg className="w-16 h-16 mx-auto text-cinza-texto/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-          </svg>
-          <p className="text-base text-cinza-texto mb-2">Nenhuma notícia encontrada</p>
-          <p className="text-sm text-cinza-texto/70">Novas notícias de {cityName} serão publicadas em breve.</p>
-        </div>
-      )}
     </div>
   );
 }
