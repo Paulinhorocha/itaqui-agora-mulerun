@@ -40,7 +40,7 @@ export default function Footer() {
             <h4 className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-[1.5px] mb-3 sm:mb-4">
               Portal
             </h4>
-            <Link href="/sobre" className="block text-[11px] sm:text-[12.5px] text-white/62 mb-2 sm:mb-2.5 hover:text-ciano transition-colors">Expediente</Link>
+            <Link href="/admin" className="block text-[11px] sm:text-[12.5px] text-white/62 mb-2 sm:mb-2.5 hover:text-ciano transition-colors">Admin</Link>
             <Link href="/contato" className="block text-[11px] sm:text-[12.5px] text-white/62 mb-2 sm:mb-2.5 hover:text-ciano transition-colors">Anuncie conosco</Link>
             <Link href="/contato" className="block text-[11px] sm:text-[12.5px] text-white/62 mb-2 sm:mb-2.5 hover:text-ciano transition-colors">Fale conosco</Link>
             <Link href="/privacidade" className="block text-[11px] sm:text-[12.5px] text-white/62 mb-2 sm:mb-2.5 hover:text-ciano transition-colors">Privacidade</Link>
