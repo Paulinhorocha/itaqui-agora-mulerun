@@ -44,7 +44,7 @@ export default async function CityPage({ params }: CityPageProps) {
     excerpt: string;
     image_url: string | null;
     published_at: string;
-    categories?: { name: string; slug: string } | null;
+    categories?: { name: string; slug: string }[] | null;
   }> = [];
 
   try {
