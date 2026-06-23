@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { useBreakingNews } from "@/hooks/useBreakingNews";
+import Link from "next/link";
 
 const navItems = [
-  { label: "Notícias", active: true },
-  { label: "Itaqui" },
-  { label: "Maçambará" },
-  { label: "São Borja" },
-  { label: "Uruguaiana" },
-  { label: "Alegrete" },
-  { label: "Estado" },
-  { label: "Geral" },
+  { label: "Notícias", href: "/", active: true },
+  { label: "Itaqui", href: "/itaqui" },
+  { label: "Maçambará", href: "/macambara" },
+  { label: "São Borja", href: "/sao-borja" },
+  { label: "Uruguaiana", href: "/uruguaiana" },
+  { label: "Alegrete", href: "/alegrete" },
+  { label: "Estado", href: "/estado" },
+  { label: "Geral", href: "/geral" },
 ];
 
 export default function Header() {
@@ -30,21 +31,17 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Aqui vai integrar com Supabase depois
-      console.log("Buscando:", searchQuery);
-      // router.push(`/busca?q=${encodeURIComponent(searchQuery)}`);
+      window.location.href = `/busca?q=${encodeURIComponent(searchQuery)}`;
     }
   };
 
   return (
     <header className="sticky top-0 z-50">
-      {/* UTIL BAR */}
       <div className="bg-azul px-4 sm:px-8 lg:px-12 xl:px-16 py-2 flex items-center justify-between gap-2">
         <span className="text-[10px] sm:text-[11.5px] text-white/55 font-normal tracking-wide capitalize truncate">
           {today}
         </span>
         
-        {/* Desktop: busca inline */}
         <form onSubmit={handleSearch} className="hidden sm:flex items-center bg-white/8 border border-white/12 rounded-md overflow-hidden focus-within:border-ciano focus-within:bg-white/12 transition-colors">
           <input
             type="text"
@@ -61,7 +58,6 @@ export default function Header() {
           </button>
         </form>
 
-        {/* Mobile: botão de busca */}
         <button
           onClick={() => setSearchOpen(true)}
           className="sm:hidden p-1.5 text-white/70 hover:text-white transition-colors"
@@ -74,10 +70,8 @@ export default function Header() {
         </button>
       </div>
 
-      {/* HEADER: logo + ad */}
       <div className="bg-white px-4 sm:px-8 lg:px-12 xl:px-16 py-2 sm:py-2.5 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 border-b border-cinza-borda">
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-3 w-full sm:w-auto sm:shrink-0 sm:basis-[35%]">
+        <Link href="/" className="flex items-center gap-3 w-full sm:w-auto sm:shrink-0 sm:basis-[35%]">
           <div className="w-9 h-9 sm:w-[42px] sm:h-[42px] rounded-[11px] bg-azul flex items-center justify-center shrink-0 relative overflow-hidden">
             <div className="absolute bottom-[-8px] right-[-8px] w-[30px] h-[30px] rounded-full bg-ciano opacity-25" />
             <svg className="w-6 h-6 sm:w-7 sm:h-7 relative z-10" viewBox="0 0 24 24" fill="none">
@@ -93,9 +87,8 @@ export default function Header() {
               Fronteira Oeste em tempo real
             </div>
           </div>
-        </a>
+        </Link>
 
-        {/* Ad banner - escondido em mobile */}
         <div className="hidden sm:flex flex-1 w-full h-[62px] rounded-[10px] bg-gradient-to-r from-azul via-[#005a80] to-ciano-dark items-center justify-between px-5 overflow-hidden relative cursor-pointer hover:opacity-95 transition-opacity">
           <div className="absolute right-[-40px] top-[-40px] w-[160px] h-[160px] rounded-full bg-ciano/18" />
           <div className="absolute right-[60px] bottom-[-50px] w-[100px] h-[100px] rounded-full bg-white/5" />
@@ -116,17 +109,15 @@ export default function Header() {
         </div>
       </div>
 
-      {/* NAV */}
       <div className="bg-white border-b border-cinza-borda shadow-[0_1px_0_var(--color-cinza-borda)]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between">
-          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-0.5">
             {navItems.map((item, i) => (
               <div key={i} className="flex items-center">
                 {i === 1 && <div className="w-px h-3.5 bg-cinza-borda mx-1 shrink-0" />}
                 {i === 6 && <div className="w-px h-3.5 bg-cinza-borda mx-1 shrink-0" />}
-                <a
-                  href="#"
+                <Link
+                  href={item.href}
                   className={`text-[12.5px] font-medium px-3.5 py-3 rounded-md whitespace-nowrap transition-colors flex items-center gap-1 relative ${
                     item.active
                       ? "text-ciano font-semibold"
@@ -137,12 +128,11 @@ export default function Header() {
                   {item.active && (
                     <span className="absolute bottom-0 left-3.5 right-3.5 h-0.5 bg-ciano rounded-t-sm" />
                   )}
-                </a>
+                </Link>
               </div>
             ))}
           </div>
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="ml-auto md:hidden p-2 text-texto-leve hover:text-ciano transition-colors"
@@ -158,28 +148,26 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile menu expandido */}
         {menuOpen && (
           <div className="md:hidden border-t border-cinza-borda bg-white">
             <div className="px-3 py-2 flex flex-col">
               {navItems.map((item, i) => (
-                <a
+                <Link
                   key={i}
-                  href="#"
+                  href={item.href}
                   className={`px-3 py-3 text-sm font-medium border-b border-cinza-borda last:border-0 ${
                     item.active ? "text-ciano font-semibold" : "text-texto-leve"
                   }`}
                   onClick={() => setMenuOpen(false)}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* BREAKING NEWS TICKER */}
       <div className="bg-ciano px-4 sm:px-8 lg:px-12 xl:px-16 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-4 overflow-hidden">
         <div className="ticker-badge bg-azul text-white text-[9px] sm:text-[10px] font-extrabold py-1 sm:py-1.5 px-2 sm:px-3 rounded-md uppercase tracking-wider whitespace-nowrap shrink-0 flex items-center gap-1 sm:gap-1.5 shadow-lg">
           <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse" />
@@ -216,11 +204,9 @@ export default function Header() {
         </div>
       </div>
 
-      {/* MOBILE SEARCH MODAL */}
       {searchOpen && (
         <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm" onClick={() => setSearchOpen(false)}>
           <div className="bg-white h-full sm:h-auto sm:max-w-2xl sm:mx-auto sm:mt-20 sm:rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            {/* Header do modal */}
             <div className="bg-azul px-4 py-3 flex items-center gap-3">
               <button
                 onClick={() => setSearchOpen(false)}
@@ -249,7 +235,6 @@ export default function Header() {
               </form>
             </div>
 
-            {/* Resultados (placeholder) */}
             <div className="p-4 sm:p-6">
               {searchQuery ? (
                 <div className="text-center py-12">

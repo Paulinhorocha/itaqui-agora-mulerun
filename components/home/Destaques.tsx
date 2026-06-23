@@ -1,6 +1,6 @@
 import type { FeaturedCard } from "@/lib/types";
+import Link from "next/link";
 
-// Dados estáticos como fallback
 const DEFAULT_ITEMS: FeaturedCard[] = [
   {
     id: "1",
@@ -57,25 +57,23 @@ export default function Destaques({ items }: DestaquesProps) {
 
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 py-6 sm:py-8 lg:py-10">
-      {/* Section header */}
       <div className="flex items-center justify-between mb-4 sm:mb-5 lg:mb-6">
         <h2 className="text-[11px] sm:text-[13px] font-bold text-azul uppercase tracking-wide flex items-center gap-1.5 sm:gap-2">
           <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-ciano shrink-0" />
           Destaques
         </h2>
-        <a href="#" className="text-[10px] sm:text-[11.5px] text-ciano font-semibold hover:underline">
+        <Link href="/busca" className="text-[10px] sm:text-[11.5px] text-ciano font-semibold hover:underline">
           Ver todos ›
-        </a>
+        </Link>
       </div>
 
-      {/* Grid - cards com mesma altura */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
         {data.map((item) => (
-          <article
+          <Link
             key={item.id}
+            href={`/noticia/${item.id}`}
             className="bg-white rounded-lg sm:rounded-xl overflow-hidden border border-cinza-borda cursor-pointer hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(0,50,80,0.09)] transition-all flex flex-col"
           >
-            {/* Imagem quadrada */}
             <div className="relative aspect-square w-full overflow-hidden">
               <div
                 className="absolute inset-0 flex items-center justify-center"
@@ -100,7 +98,6 @@ export default function Destaques({ items }: DestaquesProps) {
               </span>
             </div>
 
-            {/* Conteúdo abaixo da imagem */}
             <div className="p-3 sm:p-4 flex flex-col flex-1">
               <h3 className="text-[12px] sm:text-[13px] font-bold text-texto leading-[1.4] mb-1.5 line-clamp-2">
                 {item.title}
@@ -116,7 +113,7 @@ export default function Destaques({ items }: DestaquesProps) {
                 {item.time_ago}
               </div>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </section>
