@@ -1,4 +1,5 @@
-{ createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 function formatTimeAgo(dateStr: string): string {
@@ -54,7 +55,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       const supabase = await createClient();
 
-      // Busca notícia por ID
       const { data } = await supabase
         .from("news")
         .select("*, categories(name, slug), cities(name, slug)")
@@ -64,7 +64,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
       if (data) {
         news = data;
 
-        // Busca notícias relacionadas (mesma categoria ou cidade)
         const { data: related } = await supabase
           .from("news")
           .select("id, title, excerpt, image_url, published_at, categories(name)")
@@ -80,13 +79,12 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
     // fallback
   }
 
-  // Fallback estático
   if (!news) {
     news = {
       id: slug,
       title: "Notícia de exemplo",
       excerpt: "Esta é uma notícia de exemplo. Configure o Supabase para ver notícias reais.",
-      content: "<p>Esta é uma notícia de exemplo. Configure o Supabase para ver notícias reais.</p><p>Adicione notícias pelo Table Editor do Supabase e elas aparecerão aqui automaticamente.</p>",
+      content: "<p>Esta é uma notícia de exemplo. Configure o Supabase para ver notícias reais.</p><p>Adicione notícias pelo painel admin e elas aparecerão aqui automaticamente.</p>",
       image_url: null,
       published_at: new Date().toISOString(),
       categories: { name: "Geral", slug: "geral" },
@@ -99,7 +97,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 lg:py-12">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-4 text-xs sm:text-sm flex-wrap">
         <Link href="/" className="text-ciano hover:underline">Início</Link>
         <span className="text-cinza-texto">/</span>
@@ -112,24 +109,20 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
         <span className="text-texto font-semibold truncate">{cat?.name || "Notícia"}</span>
       </div>
 
-      {/* Categoria */}
       {cat && (
         <span className="inline-block bg-ciano text-azul text-[10px] sm:text-xs font-extrabold py-1 px-3 rounded-full uppercase mb-3">
           {cat.name}
         </span>
       )}
 
-      {/* Título */}
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-texto leading-tight mb-3">
         {news.title}
       </h1>
 
-      {/* Excerpt */}
       <p className="text-base sm:text-lg text-cinza-texto leading-relaxed mb-4">
         {news.excerpt}
       </p>
 
-      {/* Meta */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-cinza-texto mb-6 pb-6 border-b border-cinza-borda">
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +140,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
         </div>
       </div>
 
-      {/* Imagem */}
       <div className="aspect-video bg-gradient-to-br from-azul to-ciano-dark rounded-xl overflow-hidden mb-6 flex items-center justify-center">
         {news.image_url ? (
           <img src={news.image_url} alt={news.title} className="w-full h-full object-cover" />
@@ -158,13 +150,11 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
         )}
       </div>
 
-      {/* Conteúdo */}
       <div
         className="prose prose-sm sm:prose-base max-w-none text-texto leading-relaxed"
         dangerouslySetInnerHTML={{ __html: news.content }}
       />
 
-      {/* Tags */}
       <div className="mt-8 pt-6 border-t border-cinza-borda">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs sm:text-sm font-semibold text-texto">Tags:</span>
@@ -181,20 +171,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
         </div>
       </div>
 
-      {/* Compartilhamento */}
-      <div className="mt-6 p-4 bg-cinza-bg rounded-xl">
-        <p className="text-xs sm:text-sm font-semibold text-texto mb-3">Compartilhe esta notícia:</p>
-        <div className="flex gap-2">
-          <button className="flex-1 bg-[#1877F2] text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">
-            Facebook
-          </button>
-          <button className="flex-1 bg-[#25D366] text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">
-            WhatsApp
-          </button>
-        </div>
-      </div>
-
-      {/* Notícias relacionadas */}
       {relatedNews.length > 0 && (
         <div className="mt-10 pt-8 border-t border-cinza-borda">
           <h2 className="text-lg sm:text-xl font-bold text-azul mb-4 flex items-center gap-2">
@@ -241,7 +217,6 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
 export async function generateStaticParams() {
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      const { createClient } = await import("@/lib/supabase/server");
       const supabase = await createClient();
       const { data } = await supabase.from("news").select("id").limit(20);
       if (data) return data.map((n) => ({ slug: n.id }));
