@@ -38,7 +38,7 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
     content: string;
     image_url: string | null;
     published_at: string;
-    categories?: { name: string; slug: string } | null;
+    categories?: { name: string; slug: string }[] | null
     cities?: { name: string; slug: string } | null;
   } | null = null;
 
