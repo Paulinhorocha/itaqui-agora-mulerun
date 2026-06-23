@@ -31,18 +31,21 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      setSearchOpen(false);
       window.location.href = `/busca?q=${encodeURIComponent(searchQuery)}`;
     }
   };
 
   return (
     <header className="sticky top-0 z-50">
-      <div className="bg-azul px-4 sm:px-8 lg:px-12 xl:px-16 py-2 flex items-center justify-between gap-2">
-        <span className="text-[10px] sm:text-[11.5px] text-white/55 font-normal tracking-wide capitalize truncate">
+      {/* UTIL BAR */}
+      <div className="bg-azul px-4 sm:px-8 lg:px-12 xl:px-16 py-2 flex items-center justify-between gap-3">
+        <span className="text-[10px] sm:text-[11.5px] text-white/55 font-normal tracking-wide capitalize truncate min-w-0">
           {today}
         </span>
-        
-        <form onSubmit={handleSearch} className="hidden sm:flex items-center bg-white/8 border border-white/12 rounded-md overflow-hidden focus-within:border-ciano focus-within:bg-white/12 transition-colors">
+
+        {/* Desktop: busca inline */}
+        <form onSubmit={handleSearch} className="hidden sm:flex items-center bg-white/8 border border-white/12 rounded-md overflow-hidden focus-within:border-ciano focus-within:bg-white/12 transition-colors shrink-0">
           <input
             type="text"
             placeholder="Buscar notícias..."
@@ -58,59 +61,68 @@ export default function Header() {
           </button>
         </form>
 
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="sm:hidden p-1.5 text-white/70 hover:text-white transition-colors"
-          aria-label="Buscar"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="bg-white px-4 sm:px-8 lg:px-12 xl:px-16 py-2 sm:py-2.5 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 border-b border-cinza-borda">
-        <Link href="/" className="flex items-center gap-3 w-full sm:w-auto sm:shrink-0 sm:basis-[35%]">
-          <div className="w-9 h-9 sm:w-[42px] sm:h-[42px] rounded-[11px] bg-azul flex items-center justify-center shrink-0 relative overflow-hidden">
-            <div className="absolute bottom-[-8px] right-[-8px] w-[30px] h-[30px] rounded-full bg-ciano opacity-25" />
-            <svg className="w-6 h-6 sm:w-7 sm:h-7 relative z-10" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="var(--color-ciano)" strokeWidth="1.5" opacity="0.6" />
-              <path d="M8.5 12h7M12 8.5v7" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+        {/* Mobile: botão busca + sandwich lado a lado */}
+        <div className="flex sm:hidden items-center gap-1 shrink-0">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2 text-white/70 hover:text-white transition-colors"
+            aria-label="Buscar"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
             </svg>
-          </div>
-          <div>
-            <div className="text-lg sm:text-xl font-black text-azul tracking-[-1px] leading-none">
-              Itaqui<span className="text-ciano">Agora</span>
-            </div>
-            <div className="text-[9px] sm:text-[10px] text-cinza-texto font-medium tracking-[1.2px] uppercase mt-0.5">
-              Fronteira Oeste em tempo real
-            </div>
-          </div>
-        </Link>
-
-        <div className="hidden sm:flex flex-1 w-full h-[62px] rounded-[10px] bg-gradient-to-r from-azul via-[#005a80] to-ciano-dark items-center justify-between px-5 overflow-hidden relative cursor-pointer hover:opacity-95 transition-opacity">
-          <div className="absolute right-[-40px] top-[-40px] w-[160px] h-[160px] rounded-full bg-ciano/18" />
-          <div className="absolute right-[60px] bottom-[-50px] w-[100px] h-[100px] rounded-full bg-white/5" />
-          <div className="relative z-10">
-            <div className="text-[9px] font-semibold text-white/50 uppercase tracking-[2px] mb-1">
-              Espaço publicitário
-            </div>
-            <div className="text-[17px] font-black text-white tracking-[-0.5px] leading-none">
-              Sua marca em <span className="text-ciano">DESTAQUE</span>
-            </div>
-            <div className="text-[11px] text-white/55 mt-1">
-              Alcance toda a Fronteira Oeste do Rio Grande do Sul
-            </div>
-          </div>
-          <button className="relative z-10 bg-ciano text-azul text-[11px] font-extrabold py-2.5 px-5 rounded-lg uppercase tracking-wide border-none cursor-pointer font-sans whitespace-nowrap hover:bg-[#02c4d0] transition-colors">
-            Anuncie Aqui
           </button>
         </div>
       </div>
 
+      {/* HEADER: logo + ad */}
+      <div className="bg-white px-4 sm:px-8 lg:px-12 xl:px-16 py-3 sm:py-2.5 border-b border-cinza-borda">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            <div className="w-9 h-9 sm:w-[42px] sm:h-[42px] rounded-[11px] bg-azul flex items-center justify-center shrink-0 relative overflow-hidden">
+              <div className="absolute bottom-[-8px] right-[-8px] w-[30px] h-[30px] rounded-full bg-ciano opacity-25" />
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 relative z-10" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="var(--color-ciano)" strokeWidth="1.5" opacity="0.6" />
+                <path d="M8.5 12h7M12 8.5v7" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-lg sm:text-xl font-black text-azul tracking-[-1px] leading-none">
+                Itaqui<span className="text-ciano">Agora</span>
+              </div>
+              <div className="text-[9px] sm:text-[10px] text-cinza-texto font-medium tracking-[1.2px] uppercase mt-0.5">
+                Fronteira Oeste em tempo real
+              </div>
+            </div>
+          </Link>
+
+          {/* Ad banner - apenas desktop */}
+          <div className="hidden lg:flex flex-1 max-w-[600px] ml-6 h-[62px] rounded-[10px] bg-gradient-to-r from-azul via-[#005a80] to-ciano-dark items-center justify-between px-5 overflow-hidden relative cursor-pointer hover:opacity-95 transition-opacity">
+            <div className="absolute right-[-40px] top-[-40px] w-[160px] h-[160px] rounded-full bg-ciano/18" />
+            <div className="absolute right-[60px] bottom-[-50px] w-[100px] h-[100px] rounded-full bg-white/5" />
+            <div className="relative z-10">
+              <div className="text-[9px] font-semibold text-white/50 uppercase tracking-[2px] mb-1">
+                Espaço publicitário
+              </div>
+              <div className="text-[17px] font-black text-white tracking-[-0.5px] leading-none">
+                Sua marca em <span className="text-ciano">DESTAQUE</span>
+              </div>
+              <div className="text-[11px] text-white/55 mt-1">
+                Alcance toda a Fronteira Oeste
+              </div>
+            </div>
+            <button className="relative z-10 bg-ciano text-azul text-[11px] font-extrabold py-2.5 px-5 rounded-lg uppercase tracking-wide border-none cursor-pointer font-sans whitespace-nowrap hover:bg-[#02c4d0] transition-colors">
+              Anuncie Aqui
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* NAV */}
       <div className="bg-white border-b border-cinza-borda shadow-[0_1px_0_var(--color-cinza-borda)]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 xl:px-16 flex items-center justify-between h-11">
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-0.5">
             {navItems.map((item, i) => (
               <div key={i} className="flex items-center">
@@ -133,9 +145,10 @@ export default function Header() {
             ))}
           </div>
 
+          {/* Mobile: sandwich à direita */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="ml-auto md:hidden p-2 text-texto-leve hover:text-ciano transition-colors"
+            className="ml-auto md:hidden p-2 -mr-2 text-texto-leve hover:text-ciano transition-colors"
             aria-label="Menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,9 +161,10 @@ export default function Header() {
           </button>
         </div>
 
+        {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-cinza-borda bg-white">
-            <div className="px-3 py-2 flex flex-col">
+            <div className="px-4 py-2 flex flex-col">
               {navItems.map((item, i) => (
                 <Link
                   key={i}
@@ -168,6 +182,7 @@ export default function Header() {
         )}
       </div>
 
+      {/* BREAKING NEWS TICKER */}
       <div className="bg-ciano px-4 sm:px-8 lg:px-12 xl:px-16 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-4 overflow-hidden">
         <div className="ticker-badge bg-azul text-white text-[9px] sm:text-[10px] font-extrabold py-1 sm:py-1.5 px-2 sm:px-3 rounded-md uppercase tracking-wider whitespace-nowrap shrink-0 flex items-center gap-1 sm:gap-1.5 shadow-lg">
           <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse" />
@@ -204,13 +219,14 @@ export default function Header() {
         </div>
       </div>
 
+      {/* MOBILE SEARCH MODAL */}
       {searchOpen && (
         <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm" onClick={() => setSearchOpen(false)}>
           <div className="bg-white h-full sm:h-auto sm:max-w-2xl sm:mx-auto sm:mt-20 sm:rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="bg-azul px-4 py-3 flex items-center gap-3">
               <button
                 onClick={() => setSearchOpen(false)}
-                className="text-white/70 hover:text-white transition-colors"
+                className="text-white/70 hover:text-white transition-colors shrink-0"
                 aria-label="Fechar"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,9 +240,9 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className="flex-1 bg-transparent border-none outline-none px-4 py-2.5 text-sm text-white placeholder:text-white/50 font-sans"
+                  className="flex-1 bg-transparent border-none outline-none px-4 py-2.5 text-sm text-white placeholder:text-white/50 font-sans min-w-0"
                 />
-                <button type="submit" className="px-4 text-white/70 hover:text-white transition-colors">
+                <button type="submit" className="px-4 text-white/70 hover:text-white transition-colors shrink-0">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <circle cx="11" cy="11" r="8" />
                     <path d="M21 21l-4.35-4.35" />
@@ -235,17 +251,14 @@ export default function Header() {
               </form>
             </div>
 
-            <div className="p-4 sm:p-6">
+            <div className="p-6">
               {searchQuery ? (
                 <div className="text-center py-12">
                   <svg className="w-16 h-16 mx-auto text-cinza-texto/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <p className="text-sm text-cinza-texto">
-                    Buscando por "<strong className="text-texto">{searchQuery}</strong>"
-                  </p>
-                  <p className="text-xs text-cinza-texto/70 mt-2">
-                    Configure o Supabase para ver resultados
+                    Buscando por &quot;<strong className="text-texto">{searchQuery}</strong>&quot;
                   </p>
                 </div>
               ) : (

@@ -1,26 +1,27 @@
-import { notFound } from "next/navigation";
+{ createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
-// Dados estáticos de fallback
-const mockNews = {
-  "exemplo-noticia-1": {
-    title: "Prefeito anuncia construção de novo Posto de Saúde no Bairro São João",
-    excerpt: "Obra promete atender mais de 8 mil moradores da região oeste da cidade.",
-    content: `
-      <p>A prefeitura de Itaqui anunciou nesta segunda-feira a construção de um novo Posto de Saúde no bairro São João. A obra, que tem investimento previsto de R$ 2,5 milhões, deve atender mais de 8 mil moradores da região oeste da cidade.</p>
-      
-      <p>O novo posto contará com consultórios médicos, sala de vacinação, atendimento odontológico e espaço para realização de exames básicos. Segundo a secretaria de saúde, a previsão é que as obras iniciem no próximo mês e sejam concluídas em até 8 meses.</p>
-      
-      <p>"Esta é uma demanda antiga da população do São João e bairros vizinhos. Com esta nova unidade, vamos descentralizar o atendimento e oferecer saúde de qualidade mais perto de casa", afirmou o prefeito em entrevista coletiva.</p>
-      
-      <p>O posto funcionará em um terreno de 1.200m² doado pela prefeitura e terá área construída de 450m². A unidade deverá funcionar de segunda a sexta-feira, das 7h às 19h, e aos sábados das 8h às 12h.</p>
-    `,
-    category: "Política",
-    city: "Itaqui",
-    author: "Redação",
-    publishedAt: "22 de junho de 2025",
-    readTime: "3 min",
-  },
-};
+function formatTimeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `há ${diffMin} min`;
+  if (diffHours < 24) return `há ${diffHours}h`;
+  if (diffDays < 7) return `há ${diffDays} dias`;
+  return date.toLocaleDateString("pt-BR");
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 interface NoticiaPageProps {
   params: Promise<{ slug: string }>;
@@ -28,31 +29,95 @@ interface NoticiaPageProps {
 
 export default async function NoticiaPage({ params }: NoticiaPageProps) {
   const { slug } = await params;
-  const news = mockNews[slug as keyof typeof mockNews];
 
-  if (!news) {
-    notFound();
+  let news: {
+    id: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    image_url: string | null;
+    published_at: string;
+    categories?: { name: string; slug: string } | null;
+    cities?: { name: string; slug: string } | null;
+  } | null = null;
+
+  let relatedNews: Array<{
+    id: string;
+    title: string;
+    excerpt: string;
+    image_url: string | null;
+    published_at: string;
+    categories?: { name: string } | null;
+  }> = [];
+
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const supabase = await createClient();
+
+      // Busca notícia por ID
+      const { data } = await supabase
+        .from("news")
+        .select("*, categories(name, slug), cities(name, slug)")
+        .eq("id", slug)
+        .maybeSingle();
+
+      if (data) {
+        news = data;
+
+        // Busca notícias relacionadas (mesma categoria ou cidade)
+        const { data: related } = await supabase
+          .from("news")
+          .select("id, title, excerpt, image_url, published_at, categories(name)")
+          .neq("id", slug)
+          .eq("category_id", data.category_id)
+          .order("published_at", { ascending: false })
+          .limit(3);
+
+        if (related) relatedNews = related;
+      }
+    }
+  } catch {
+    // fallback
   }
+
+  // Fallback estático
+  if (!news) {
+    news = {
+      id: slug,
+      title: "Notícia de exemplo",
+      excerpt: "Esta é uma notícia de exemplo. Configure o Supabase para ver notícias reais.",
+      content: "<p>Esta é uma notícia de exemplo. Configure o Supabase para ver notícias reais.</p><p>Adicione notícias pelo Table Editor do Supabase e elas aparecerão aqui automaticamente.</p>",
+      image_url: null,
+      published_at: new Date().toISOString(),
+      categories: { name: "Geral", slug: "geral" },
+      cities: { name: "Itaqui", slug: "itaqui" },
+    };
+  }
+
+  const cat = Array.isArray(news.categories) ? news.categories[0] : news.categories;
+  const city = Array.isArray(news.cities) ? news.cities[0] : news.cities;
 
   return (
     <article className="max-w-4xl mx-auto px-4 sm:px-8 lg:px-12 py-8 sm:py-10 lg:py-12">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-4 text-xs sm:text-sm">
-        <a href="/" className="text-ciano hover:underline">
-          Início
-        </a>
+      <div className="flex items-center gap-2 mb-4 text-xs sm:text-sm flex-wrap">
+        <Link href="/" className="text-ciano hover:underline">Início</Link>
         <span className="text-cinza-texto">/</span>
-        <a href={`/${news.city.toLowerCase()}`} className="text-ciano hover:underline">
-          {news.city}
-        </a>
-        <span className="text-cinza-texto">/</span>
-        <span className="text-texto font-semibold truncate">{news.category}</span>
+        {city && (
+          <>
+            <Link href={`/${city.slug}`} className="text-ciano hover:underline">{city.name}</Link>
+            <span className="text-cinza-texto">/</span>
+          </>
+        )}
+        <span className="text-texto font-semibold truncate">{cat?.name || "Notícia"}</span>
       </div>
 
       {/* Categoria */}
-      <span className="inline-block bg-ciano text-azul text-[10px] sm:text-xs font-extrabold py-1 px-3 rounded-full uppercase mb-3">
-        {news.category}
-      </span>
+      {cat && (
+        <span className="inline-block bg-ciano text-azul text-[10px] sm:text-xs font-extrabold py-1 px-3 rounded-full uppercase mb-3">
+          {cat.name}
+        </span>
+      )}
 
       {/* Título */}
       <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-texto leading-tight mb-3">
@@ -64,34 +129,33 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
         {news.excerpt}
       </p>
 
-      {/* Meta info */}
+      {/* Meta */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-cinza-texto mb-6 pb-6 border-b border-cinza-borda">
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+            <path strokeLinecap="round" strokeWidth="1.5" d="M12 6v6l4 2" />
           </svg>
-          {news.author}
+          {formatDate(news.published_at)}
         </div>
         <div className="flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
             <path strokeLinecap="round" strokeWidth="1.5" d="M12 6v6l4 2" />
           </svg>
-          {news.publishedAt}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {news.readTime} de leitura
+          {formatTimeAgo(news.published_at)}
         </div>
       </div>
 
-      {/* Imagem de destaque */}
+      {/* Imagem */}
       <div className="aspect-video bg-gradient-to-br from-azul to-ciano-dark rounded-xl overflow-hidden mb-6 flex items-center justify-center">
-        <svg className="w-24 h-24 fill-white opacity-20" viewBox="0 0 24 24">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-        </svg>
+        {news.image_url ? (
+          <img src={news.image_url} alt={news.title} className="w-full h-full object-cover" />
+        ) : (
+          <svg className="w-24 h-24 fill-white opacity-20" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+        )}
       </div>
 
       {/* Conteúdo */}
@@ -104,15 +168,16 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
       <div className="mt-8 pt-6 border-t border-cinza-borda">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs sm:text-sm font-semibold text-texto">Tags:</span>
-          <a href="#" className="text-xs bg-cinza-bg text-cinza-texto px-3 py-1 rounded-full hover:bg-ciano hover:text-white transition-colors">
-            {news.city}
-          </a>
-          <a href="#" className="text-xs bg-cinza-bg text-cinza-texto px-3 py-1 rounded-full hover:bg-ciano hover:text-white transition-colors">
-            {news.category}
-          </a>
-          <a href="#" className="text-xs bg-cinza-bg text-cinza-texto px-3 py-1 rounded-full hover:bg-ciano hover:text-white transition-colors">
-            Saúde
-          </a>
+          {city && (
+            <Link href={`/${city.slug}`} className="text-xs bg-cinza-bg text-cinza-texto px-3 py-1 rounded-full hover:bg-ciano hover:text-white transition-colors">
+              {city.name}
+            </Link>
+          )}
+          {cat && (
+            <Link href={`/busca?q=${cat.slug}`} className="text-xs bg-cinza-bg text-cinza-texto px-3 py-1 rounded-full hover:bg-ciano hover:text-white transition-colors">
+              {cat.name}
+            </Link>
+          )}
         </div>
       </div>
 
@@ -126,24 +191,63 @@ export default async function NoticiaPage({ params }: NoticiaPageProps) {
           <button className="flex-1 bg-[#25D366] text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">
             WhatsApp
           </button>
-          <button className="flex-1 bg-[#E4405F] text-white text-xs sm:text-sm font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity">
-            Instagram
-          </button>
         </div>
       </div>
 
-      {/* Aviso sobre Supabase */}
-      <div className="mt-6 p-4 bg-ciano-light border border-ciano/20 rounded-lg">
-        <p className="text-xs sm:text-sm text-ciano-dark">
-          <strong>Nota:</strong> Esta página usa dados estáticos de exemplo. Configure o Supabase para ver notícias reais.
-        </p>
-      </div>
+      {/* Notícias relacionadas */}
+      {relatedNews.length > 0 && (
+        <div className="mt-10 pt-8 border-t border-cinza-borda">
+          <h2 className="text-lg sm:text-xl font-bold text-azul mb-4 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-ciano shrink-0" />
+            Notícias Relacionadas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {relatedNews.map((item) => {
+              const relCat = Array.isArray(item.categories) ? item.categories[0] : item.categories;
+              return (
+                <Link
+                  key={item.id}
+                  href={`/noticia/${item.id}`}
+                  className="bg-white rounded-xl overflow-hidden border border-cinza-borda hover:-translate-y-1 hover:shadow-lg transition-all"
+                >
+                  <div className="aspect-square bg-gradient-to-br from-azul to-ciano-dark flex items-center justify-center relative">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <svg className="w-12 h-12 fill-white opacity-20" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                      </svg>
+                    )}
+                    {relCat && (
+                      <span className="absolute top-2 left-2 bg-ciano text-azul text-[8px] font-extrabold py-0.5 px-2 rounded-full uppercase">
+                        {relCat.name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-xs sm:text-sm font-bold text-texto line-clamp-2">{item.title}</h3>
+                    <div className="text-[10px] text-cinza-texto mt-2">{formatTimeAgo(item.published_at)}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </article>
   );
 }
 
 export async function generateStaticParams() {
-  return Object.keys(mockNews).map((slug) => ({
-    slug,
-  }));
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const { createClient } = await import("@/lib/supabase/server");
+      const supabase = await createClient();
+      const { data } = await supabase.from("news").select("id").limit(20);
+      if (data) return data.map((n) => ({ slug: n.id }));
+    }
+  } catch {
+    // fallback
+  }
+  return [{ slug: "exemplo-noticia-1" }];
 }
